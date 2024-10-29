@@ -1,6 +1,7 @@
 OLED_ENABLE = yes
 OLED_DRIVER = ssd1306   # Enables the use of OLED displays
 ENCODER_ENABLE = yes       # Enables the use of one or more encoders
+ENCODER_MAP_ENABLE = yes
 
 RGB_MATRIX_ENABLE = yes
 RGB_MATRIX_DRIVER = ws2812

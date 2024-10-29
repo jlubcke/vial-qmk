@@ -22,8 +22,6 @@ void keyboard_pre_init_user(void) {
   writePinHigh(24);
 }
 
-
-
 enum layers {
     _QWERTY = 0,
     _LOWER,
@@ -150,87 +148,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 };
 
-bool encoder_update_user(uint8_t index, bool clockwise) {
-    if (index == 0) {
-        switch(biton32(layer_state)) {
-            case _UPPER:
-                if (clockwise){
-                    tap_code(KC_RIGHT);
-                } else{
-                    tap_code(KC_LEFT);
-                }
-                break;
-            case _QWERTY:
-                if (clockwise) {
-                    tap_code16(KC_TAB);
-                } else {
-                    tap_code16(S(KC_TAB));
-                }
-                break;
-            case _LOWER:
-                if (clockwise){
-                    tap_code(KC_PPLS);
-                } else{
-                    tap_code(KC_PMNS);
-                }
-                break;
-            case _ADJUST:
-                if (clockwise){
-                    tap_code(KC_VOLU);
-                } else{
-                    tap_code(KC_VOLD);
-                }
-                break;
-            default:
-                break;
-        }
-    } else if (index == 1) {
-        switch(biton32(layer_state)) {
-            case _UPPER:
-                if (clockwise){
-                    tap_code(KC_UP);
-                } else {
-                    tap_code(KC_DOWN);
-                }
-                break;
-            case _QWERTY:
-                if (clockwise){
-                    tap_code(KC_PGUP);
-                } else{
-                    tap_code(KC_PGDN);
-                }
-                break;
-            case _LOWER:
-                if (clockwise){
-                    tap_code(KC_LEFT);
-                } else{
-                    tap_code(KC_RIGHT);
-                }
-                break;
-            case _ADJUST:
-                if (clockwise) {
-                    tap_code(KC_SCRL);
-                } else {
-                    tap_code(KC_PAUS);
-                }
-            default:
-                break;
-        }
-    }
-    return false;
-}
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
+    [_UPPER]  = { ENCODER_CCW_CW(KC_RIGHT, KC_LEFT),   ENCODER_CCW_CW(KC_UP,   KC_DOWN ) },
+    [_QWERTY] = { ENCODER_CCW_CW(KC_TAB,   S(KC_TAB)), ENCODER_CCW_CW(KC_PGUP, KC_PGDN ) },
+    [_LOWER]  = { ENCODER_CCW_CW(KC_PPLS,  KC_PMNS),   ENCODER_CCW_CW(KC_LEFT, KC_RIGHT) },
+    [_ADJUST] = { ENCODER_CCW_CW(KC_VOLD,  KC_VOLU),   ENCODER_CCW_CW(KC_SCRL, KC_PAUS ) },
+};
 
-
-
-// called on every keypress
-//bool process_record_user(uint16_t keycode, keyrecord_t *record)
-//{
-//    // Fun, lets make a heat map!
-//    return true;
-//}
-
-
-// #ifdef OLED_DRIVER_ENABLE
 #if defined(OLED_ENABLE) || defined(OLED_DRIVER_ENABLE)
 
 #define WIDTH 128
