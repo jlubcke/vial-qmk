@@ -190,7 +190,7 @@ static int frame_cnt = 0;
 static void render_anim(void) {
     oled_clear();
     paint(frame_cnt++);
-    oled_render_dirty(1);
+    oled_render();
 }
 
 bool oled_task_user(void)
@@ -234,7 +234,6 @@ bool oled_task_user(void)
         oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
     } else
     {
-        oled_on();
         render_anim();
     }
     return false;
