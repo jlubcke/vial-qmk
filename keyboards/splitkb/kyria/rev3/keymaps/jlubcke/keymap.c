@@ -1,6 +1,7 @@
 #include QMK_KEYBOARD_H
 #include <stdio.h>
-#include "animation.h"
+//#include "animation.h"
+#include <math.h>
 
 /**
  * Put this somewhere at the beginning of the file --
@@ -165,25 +166,31 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 
 #if defined(OLED_ENABLE)
 
-// OLED width
-#define WIDTH 128
+#define X_SIZE 128
+#define Y_SIZE 64
+#define N 10
+#define ZOOM 0.7
 
-oled_rotation_t oled_init_user(oled_rotation_t rotation)
-{
-	return OLED_ROTATION_180;
+void paint(int cnt) {
+    double phi = cnt / 20.0;
+    for (int i = 0; i <= N; i++) {
+        for (int j = 0; j <= N; j++) {
+            double x = (i - N / 2.0) / N * 2;
+            double y = (j - N / 2.0) / N * 2;
+            double d = sqrt(x * x + y * y);
+            double z = (sqrt(2) - d) * sin(-d * 3 + cnt / 3.0) * 0.7;
+            int xp = X_SIZE * (1 + (x * sin(phi) + y * cos(phi)) * ZOOM) / 2;
+            int yp = Y_SIZE * (1 + (z + (x * cos(phi) - y * sin(phi)) / 2) * ZOOM) / 2;
+            oled_write_pixel(xp, yp, 1);
+        }
+    }
 }
 
-static int c_frame = 0;
-bool first_render = true;
-
+static int frame_cnt = 0;
 static void render_anim(void) {
-    if (first_render) {
-        oled_write_raw_P( frame, ANIM_SIZE);
-        first_render = 0;
-    } else {
-        change_frame_bytewise(c_frame);
-    }
-    c_frame = c_frame+1 > IDLE_FRAMES ? 0 : c_frame+1;
+    oled_clear();
+    paint(frame_cnt++);
+    oled_render_dirty(1);
 }
 
 bool oled_task_user(void)
