@@ -170,10 +170,9 @@ void paint(char frame[FRAME_SIZE], int cnt) {
     }
 }
 
-static int frame_cnt = 0;
 static void render_anim(void) {
     char PROGMEM frame[FRAME_SIZE] = {0};
-    paint(frame, frame_cnt++);
+    paint(frame, timer_read() / 200);
 //    for (uint16_t i=0; i < FRAME_SIZE; i++){
 //        oled_write_raw_byte(frame[i], i);
 //    }
