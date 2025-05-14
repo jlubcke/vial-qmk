@@ -1,20 +1,7 @@
 #include QMK_KEYBOARD_H
 #include <stdio.h>
-//#include "animation.h"
 #include <math.h>
 
-/**
- * Put this somewhere at the beginning of the file --
- * Make sure you import only one of animations at a time
- * They all have same function exported, so it won't compile if you
- * include more than one at a time. You can also configure some options
- * before including the animation. Not all animations support them, but some do :P.
- */
-#define ANIM_INVERT false
-#define ANIM_RENDER_WPM true
-#define FAST_TYPE_WPM 45 //Switch to fast animation when over words per minute
-
-//#include "demon.c"
 
 void keyboard_pre_init_user(void) {
   // Set our LED pin as output
@@ -151,27 +138,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [_UPPER]  = { ENCODER_CCW_CW(KC_RIGHT, KC_LEFT),   ENCODER_CCW_CW(KC_UP,   KC_DOWN ) },
-    [_QWERTY] = { ENCODER_CCW_CW(KC_TAB,   S(KC_TAB)), ENCODER_CCW_CW(KC_PGUP, KC_PGDN ) },
-    [_LOWER]  = { ENCODER_CCW_CW(KC_PPLS,  KC_PMNS),   ENCODER_CCW_CW(KC_LEFT, KC_RIGHT) },
-    [_ADJUST] = { ENCODER_CCW_CW(KC_VOLD,  KC_VOLU),   ENCODER_CCW_CW(KC_SCRL, KC_PAUS ) },
+    [_UPPER]  = { ENCODER_CCW_CW(KC_LEFT,   KC_RIGHT), ENCODER_CCW_CW(KC_UP,   KC_DOWN ) },
+    [_QWERTY] = { ENCODER_CCW_CW(S(KC_TAB), KC_TAB),   ENCODER_CCW_CW(KC_PGUP, KC_PGDN ) },
+    [_LOWER]  = { ENCODER_CCW_CW(KC_PMNS,   KC_PPLS),  ENCODER_CCW_CW(KC_LEFT, KC_RIGHT) },
+    [_ADJUST] = { ENCODER_CCW_CW(KC_VOLD,   KC_VOLU),  ENCODER_CCW_CW(KC_SCRL, KC_PAUS ) },
 };
 
-#if defined(OLED_ENABLE) || defined(OLED_DRIVER_ENABLE)
-
-#define WIDTH 128
-
-
-#endif
-
-#if defined(OLED_ENABLE)
 
 #define X_SIZE 128
 #define Y_SIZE 64
 #define N 10
 #define ZOOM 0.7
 
-void paint(int cnt) {
+#define FRAME_SIZE (Y_SIZE * X_SIZE / 8)
+void plot(char frame[FRAME_SIZE], int x, int y) {
+    frame[(y / 8) * X_SIZE + x] |= 1 << y % 8;
+}
+
+void paint(char frame[FRAME_SIZE], int cnt) {
     double phi = cnt / 20.0;
     for (int i = 0; i <= N; i++) {
         for (int j = 0; j <= N; j++) {
@@ -181,17 +165,25 @@ void paint(int cnt) {
             double z = (sqrt(2) - d) * sin(-d * 3 + cnt / 3.0) * 0.7;
             int xp = X_SIZE * (1 + (x * sin(phi) + y * cos(phi)) * ZOOM) / 2;
             int yp = Y_SIZE * (1 + (z + (x * cos(phi) - y * sin(phi)) / 2) * ZOOM) / 2;
-            oled_write_pixel(xp, yp, 1);
+            plot(frame, xp, yp);
         }
     }
 }
 
 static int frame_cnt = 0;
 static void render_anim(void) {
-    oled_clear();
-    paint(frame_cnt++);
-    oled_render();
+    char PROGMEM frame[FRAME_SIZE] = {0};
+    paint(frame, frame_cnt++);
+//    for (uint16_t i=0; i < FRAME_SIZE; i++){
+//        oled_write_raw_byte(frame[i], i);
+//    }
+    oled_write_raw_P(frame, FRAME_SIZE);
 }
+
+
+#define FRAME_TIMEOUT (1000/20)
+
+static uint16_t anim_timer = 0;
 
 bool oled_task_user(void)
 {
@@ -234,10 +226,16 @@ bool oled_task_user(void)
         oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
     } else
     {
+//        if (timer_elapsed(anim_timer) > FRAME_TIMEOUT) {
+//            anim_timer = timer_read();
+//            render_anim();
+//        }
         render_anim();
     }
     return false;
 }
 
-
-#endif // defined(OLED_ENABLE) || defined(OLED_DRIVER_ENABLE)
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+    anim_timer = timer_read();
+    return rotation;
+}
