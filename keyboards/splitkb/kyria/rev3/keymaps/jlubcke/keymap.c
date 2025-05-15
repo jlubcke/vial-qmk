@@ -147,22 +147,29 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 
 #define X_SIZE 128
 #define Y_SIZE 64
-#define N 10
+#define N 20
 #define ZOOM 0.7
+#define N_FRAMES 25
+#define FRAME_TIMEOUT (1000/30)
 
 #define FRAME_SIZE (Y_SIZE * X_SIZE / 8)
+
+static uint16_t anim_timer = 0;
+static int frame_cnt = 0;
+char frames[N_FRAMES][FRAME_SIZE] = {{0}};
+
 void plot(char frame[FRAME_SIZE], int x, int y) {
     frame[(y / 8) * X_SIZE + x] |= 1 << y % 8;
 }
 
 void paint(char frame[FRAME_SIZE], int cnt) {
-    double phi = cnt / 20.0;
+    double phi = 2.0 * M_PI * cnt / N_FRAMES / 4;
     for (int i = 0; i <= N; i++) {
         for (int j = 0; j <= N; j++) {
             double x = (i - N / 2.0) / N * 2;
             double y = (j - N / 2.0) / N * 2;
             double d = sqrt(x * x + y * y);
-            double z = (sqrt(2) - d) * sin(-d * 3 + cnt / 3.0) * 0.7;
+            double z = (sqrt(2) - d) * sin(-d * 3 + phi * 4) * 0.7;
             int xp = X_SIZE * (1 + (x * sin(phi) + y * cos(phi)) * ZOOM) / 2;
             int yp = Y_SIZE * (1 + (z + (x * cos(phi) - y * sin(phi)) / 2) * ZOOM) / 2;
             plot(frame, xp, yp);
@@ -171,23 +178,23 @@ void paint(char frame[FRAME_SIZE], int cnt) {
 }
 
 static void render_anim(void) {
-    char PROGMEM frame[FRAME_SIZE] = {0};
-    paint(frame, timer_read() / 200);
-//    for (uint16_t i=0; i < FRAME_SIZE; i++){
-//        oled_write_raw_byte(frame[i], i);
-//    }
-    oled_write_raw_P(frame, FRAME_SIZE);
+    oled_write_raw(frames[frame_cnt], FRAME_SIZE);
+    if (++frame_cnt == N_FRAMES) {
+        frame_cnt = 0;
+    };
 }
 
-
-#define FRAME_TIMEOUT (1000/20)
-
-static uint16_t anim_timer = 0;
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+    for (int i=0; i < N_FRAMES; i++) {
+        paint(frames[i], i);
+    }
+    anim_timer = timer_read();
+    return rotation;
+}
 
 bool oled_task_user(void)
 {
-    if (is_keyboard_master())
-    {
+    if (is_keyboard_master()) {
          // QMK Logo and version information
         // clang-format off
         static const char PROGMEM qmk_logo[] = {
@@ -223,18 +230,13 @@ bool oled_task_user(void)
         oled_write_P(led_usb_state.num_lock    ? PSTR("NUMLCK ") : PSTR("       "), false);
         oled_write_P(led_usb_state.caps_lock   ? PSTR("CAPLCK ") : PSTR("       "), false);
         oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
-    } else
-    {
-//        if (timer_elapsed(anim_timer) > FRAME_TIMEOUT) {
-//            anim_timer = timer_read();
-//            render_anim();
-//        }
-        render_anim();
+
+    } else {
+        if (timer_elapsed(anim_timer) > FRAME_TIMEOUT) {
+            anim_timer = timer_read();
+            render_anim();
+        }
     }
     return false;
 }
 
-oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    anim_timer = timer_read();
-    return rotation;
-}
