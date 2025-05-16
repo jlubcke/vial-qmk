@@ -149,7 +149,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 #define Y_SIZE 64
 #define N 20
 #define ZOOM 0.7
-#define N_FRAMES 25
+#define N_FRAMES 50
 #define FRAME_TIMEOUT (1000/30)
 
 #define FRAME_SIZE (Y_SIZE * X_SIZE / 8)
@@ -169,7 +169,7 @@ void paint(char frame[FRAME_SIZE], int cnt) {
             double x = (i - N / 2.0) / N * 2;
             double y = (j - N / 2.0) / N * 2;
             double d = sqrt(x * x + y * y);
-            double z = (sqrt(2) - d) * sin(-d * 3 + phi * 4) * 0.7;
+            double z = (sqrt(2) - d) * sin(-d * 5 + phi * 4) * 0.7;
             int xp = X_SIZE * (1 + (x * sin(phi) + y * cos(phi)) * ZOOM) / 2;
             int yp = Y_SIZE * (1 + (z + (x * cos(phi) - y * sin(phi)) / 2) * ZOOM) / 2;
             plot(frame, xp, yp);
@@ -223,7 +223,7 @@ bool oled_task_user(void)
                 oled_write("Lower", false);
                 break;
             case _UPPER:
-                oled_write("Upper"), false);
+                oled_write("Upper", false);
                 break;
             case _ADJUST:
                 oled_write("Adjust", false);
@@ -235,7 +235,9 @@ bool oled_task_user(void)
     } else {
         if (timer_elapsed(anim_timer) > FRAME_TIMEOUT) {
             anim_timer = timer_read();
-            render_anim();
+            if (is_oled_on()) {
+                render_anim();
+            }
         }
     }
     return false;
