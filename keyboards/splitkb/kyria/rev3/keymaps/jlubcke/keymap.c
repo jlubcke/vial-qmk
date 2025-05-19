@@ -154,39 +154,46 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 
 #define FRAME_SIZE (Y_SIZE * X_SIZE / 8)
 
+char frames[N_FRAMES][FRAME_SIZE] = {{0}};
 static uint16_t anim_timer = 0;
 static int frame_cnt = 0;
-char frames[N_FRAMES][FRAME_SIZE] = {{0}};
 
 void plot(char frame[FRAME_SIZE], int x, int y) {
     frame[(y / 8) * X_SIZE + x] |= 1 << y % 8;
 }
 
-void paint(char frame[FRAME_SIZE], int cnt) {
-    double phi = 2.0 * M_PI * cnt / N_FRAMES / 4;
+void render_frame(char frame[FRAME_SIZE], int cnt) {
+    double phi = 2.0 * M_PI * cnt / N_FRAMES;
     for (int i = 0; i <= N; i++) {
         for (int j = 0; j <= N; j++) {
-            double x = (i - N / 2.0) / N * 2;
-            double y = (j - N / 2.0) / N * 2;
+            double x = (i - N / 2.0) * 2 / N;
+            double y = (j - N / 2.0) * 2 / N;
             double d = sqrt(x * x + y * y);
-            double z = (sqrt(2) - d) * sin(-d * 5 + phi * 4) * 0.7;
-            int xp = X_SIZE * (1 + (x * sin(phi) + y * cos(phi)) * ZOOM) / 2;
-            int yp = Y_SIZE * (1 + (z + (x * cos(phi) - y * sin(phi)) / 2) * ZOOM) / 2;
+            double z = (sqrt(2) - d) * sin(phi - d * 5) * ZOOM;
+            double rotation = phi / 4;
+            int xp = X_SIZE * (1 + (x * sin(rotation) + y * cos(rotation)) * ZOOM) / 2;
+            int yp = Y_SIZE * (1 + (z + (x * cos(rotation) - y * sin(rotation)) / 2) * ZOOM) / 2;
             plot(frame, xp, yp);
         }
     }
 }
 
 static void render_anim(void) {
-    oled_write_raw(frames[frame_cnt], FRAME_SIZE);
-    if (++frame_cnt == N_FRAMES) {
-        frame_cnt = 0;
-    };
+    if (timer_elapsed(anim_timer) > FRAME_TIMEOUT) {
+        anim_timer = timer_read();
+        if (is_oled_on()) {
+            oled_write_raw(frames[frame_cnt], FRAME_SIZE);
+            if (++frame_cnt == N_FRAMES) {
+                frame_cnt = 0;
+            };
+        }
+    }
+
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     for (int i=0; i < N_FRAMES; i++) {
-        paint(frames[i], i);
+        render_frame(frames[i], i);
     }
     anim_timer = timer_read();
     return rotation;
@@ -208,9 +215,9 @@ bool oled_task_user(void)
 
         // Write host Keyboard LED Status to OLEDs
         led_t led_usb_state = host_keyboard_led_state();
-        oled_write(led_usb_state.num_lock    ? "NUMLCK " : "       ", false);
+        oled_write(led_usb_state.caps_lock   ? "CAPSLCK" : "       ", false);
         oled_write(led_usb_state.scroll_lock ? "SCRLCK " : "       ", false);
-        oled_write(led_usb_state.caps_lock   ? "CAPLCK " : "       ", false);
+        oled_write(led_usb_state.num_lock    ? "NUMLCK " : "       ", false);
         oled_write("\n", false);
 
         // Host Keyboard Layer Status
@@ -233,13 +240,9 @@ bool oled_task_user(void)
         }
 
     } else {
-        if (timer_elapsed(anim_timer) > FRAME_TIMEOUT) {
-            anim_timer = timer_read();
-            if (is_oled_on()) {
-                render_anim();
-            }
-        }
+        render_anim();
     }
+
     return false;
 }
 
