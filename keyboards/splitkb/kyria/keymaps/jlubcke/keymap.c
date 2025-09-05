@@ -62,8 +62,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |-------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+-------|
  * |  ` ~  |  F11 |  F12 |      |      |      |      | #### |  |      |      | Bksp |   (  |   )  |   {  |   }  | Shift |
  * `---------------------+------+------+------+------+------|  |------+------+------+------+------+---------------------'
- *                       | Left |      |      |      |      |  | #### |      |      |      | Up   |
- *                       | Right|----------------------------------------------------------| Down |
+ *                       | Tab  |      |      |      |      |  | #### |      |      |      | PgUp |
+ *                       | ShTab|----------------------------------------------------------| PgDn |
  *                       `------'                                                          `------'
  */
     [_UPPER] = LAYOUT(
@@ -83,8 +83,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |-------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+-------|
  * |  ` ~  |   Z  |   X  |   C  |   V  |   B  |  Del | Space|  | Enter| Bksp |   N  |   M  | ,  < | . >  | /  ? | Shift |
  * `---------------------+------+------+------+------+------|  |------+------+------+------+------+---------------------'
- *                       | Tab  |      |      |      | Enter|  | Space|      |      | Space| PgUp |
- *                       | ShTab|----------------------------------------------------------| PgDn |
+ *                       | Left |      |      |      | Enter|  | Space|      |      | Space| Up   |
+ *                       | Right|----------------------------------------------------------| Down |
  *                       `------'                                                          `------'
  */
     [_QWERTY] = LAYOUT(
@@ -138,8 +138,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [_UPPER]  = { ENCODER_CCW_CW(KC_LEFT,   KC_RIGHT), ENCODER_CCW_CW(KC_UP,   KC_DOWN ) },
-    [_QWERTY] = { ENCODER_CCW_CW(S(KC_TAB), KC_TAB),   ENCODER_CCW_CW(KC_PGUP, KC_PGDN ) },
+    [_UPPER]  = { ENCODER_CCW_CW(S(KC_TAB), KC_TAB),   ENCODER_CCW_CW(KC_PGUP, KC_PGDN ) },
+    [_QWERTY] = { ENCODER_CCW_CW(KC_LEFT,   KC_RIGHT), ENCODER_CCW_CW(KC_UP,   KC_DOWN ) },
     [_LOWER]  = { ENCODER_CCW_CW(KC_PMNS,   KC_PPLS),  ENCODER_CCW_CW(KC_LEFT, KC_RIGHT) },
     [_ADJUST] = { ENCODER_CCW_CW(KC_VOLD,   KC_VOLU),  ENCODER_CCW_CW(KC_SCRL, KC_PAUS ) },
 };
