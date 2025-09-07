@@ -235,16 +235,16 @@ bool oled_task_user(void)
                 oled_write("Vanilla", false);
                 break;
             case _LOWER:
-                oled_write("Lower", false);
+                oled_write("Lower  ", false);
                 break;
             case _UPPER:
-                oled_write("Upper", false);
+                oled_write("Upper  ", false);
                 break;
             case _ADJUST:
-                oled_write("Adjust", false);
+                oled_write("Adjust ", false);
                 break;
             default:
-                oled_write("WUT?", false);
+                oled_write("WUT?   ", false);
         }
 
     } else {
