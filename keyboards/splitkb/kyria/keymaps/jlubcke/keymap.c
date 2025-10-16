@@ -67,10 +67,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                       `------'                                                          `------'
  */
     [_UPPER] = LAYOUT(
-     KC_TAB,  KC_F1,         KC_F2,         KC_F3,         KC_F4,         KC_F5 ,                                      KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_INS,  KC_SPC,
-     CTL_ESC, LSFT_T(KC_F6), LCTL_T(KC_F7), LALT_T(KC_F8), LGUI_T(KC_F9), KC_F10,                                      KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_LBRC, KC_RBRC,
-     KC_TRNS, KC_F1,         KC_F12,        KC_TRNS,       KC_TRNS,       KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_BSPC, KC_LPRN, KC_RPRN, KC_LCBR, KC_RCBR, KC_TRNS,
-                                            ADJUST,        ADJUST,        KC_LALT, KC_LGUI, LWR_ENT, UPR_SPC, KC_RGUI, KC_RALT, KC_SPC,  ADJUST
+     KC_TAB,  KC_F1,         KC_F2,         KC_F3,         KC_F4,         KC_F5 ,                                    KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_INS,  KC_SPC,
+     CTL_ESC, LSFT_T(KC_F6), LCTL_T(KC_F7), LALT_T(KC_F8), LGUI_T(KC_F9), KC_F10,                                    KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_LBRC, KC_RBRC,
+     KC_TRNS, KC_F1,         KC_F12,        KC_TRNS,       KC_TRNS,       KC_TRNS, KC_TRNS, KC_SPC, KC_ENT, KC_TRNS, KC_BSPC, KC_LPRN, KC_RPRN, KC_LCBR, KC_RCBR, KC_TRNS,
+                                            ADJUST,        ADJUST,        KC_LALT, KC_LGUI, KC_ENT, KC_SPC, KC_RGUI, KC_RALT, KC_SPC,  ADJUST
     ),
 
 /*
@@ -109,10 +109,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `------'                                                          `------'
  */
     [_LOWER] = LAYOUT(
-    KC_TAB,  KC_1,    KC_2,   KC_3,    KC_4,    KC_5,                                        KC_6,    KC_7,   KC_8,  KC_9, KC_0,    KC_TRNS,
-    CTL_ESC, KC_EXLM, KC_AT,  KC_HASH, KC_DLR,  KC_PERC,                                     KC_CIRC, KC_4,   KC_5,  KC_6, KC_AMPR, KC_TRNS,
-    KC_TRNS, KC_PLUS, KC_EQL, KC_UNDS, KC_MINS, KC_DEL,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_0,    KC_1,   KC_2,  KC_3, KC_ASTR, KC_RSFT,
-                              ADJUST,  ADJUST,  KC_LALT, KC_LGUI, LWR_ENT, UPR_SPC, KC_RGUI, KC_RALT, KC_0,   ADJUST
+    KC_TAB,  KC_1,    KC_2,   KC_3,    KC_4,    KC_5,                                      KC_6,    KC_7,   KC_8,  KC_9, KC_0,    KC_TRNS,
+    CTL_ESC, KC_EXLM, KC_AT,  KC_HASH, KC_DLR,  KC_PERC,                                   KC_CIRC, KC_4,   KC_5,  KC_6, KC_AMPR, KC_TRNS,
+    KC_TRNS, KC_PLUS, KC_EQL, KC_UNDS, KC_MINS, KC_DEL,  KC_TRNS, KC_SPC, KC_ENT, KC_TRNS, KC_0,    KC_1,   KC_2,  KC_3, KC_ASTR, KC_RSFT,
+                              ADJUST,  ADJUST,  KC_LALT, KC_LGUI, KC_ENT, KC_SPC, KC_RGUI, KC_RALT, KC_0,   ADJUST
     ),
 
 /*
@@ -196,7 +196,6 @@ static void render_anim(void) {
             };
         }
     }
-
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
