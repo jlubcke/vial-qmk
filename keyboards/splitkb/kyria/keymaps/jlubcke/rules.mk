@@ -10,7 +10,7 @@ RGBLIGHT_ENABLE = yes      # Enable keyboard RGB underglow
 # RGB_MATRIX_ENABLE = yes
 # RGB_MATRIX_DRIVER = ws2812
 
-
+MOUSEKEY_ENABLE = yes
 
 WPM_ENABLE = yes
 EXTRAKEY_ENABLE = yes  # Media
