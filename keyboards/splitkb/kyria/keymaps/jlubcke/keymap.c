@@ -163,6 +163,9 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 #define FRAME_SIZE (Y_SIZE * X_SIZE / 8)
 
 char frames[2][N_FRAMES][FRAME_SIZE] = {{{0}}};
+int i[2] = {0};
+bool done[2] = {false};
+
 static uint16_t anim_timer = 0;
 static int frame_cnt = 0;
 static int selected_anim = 0;
@@ -172,20 +175,16 @@ void plot(char frame[FRAME_SIZE], int x, int y) {
     frame[(y / 8) * X_SIZE + x] |= 1 << y % 8;
 }
 
-void render_frame1(char frame[FRAME_SIZE], int cnt) {
+void render_frame1(char frame[FRAME_SIZE], int cnt, int i, int j) {
     double phi = 2.0 * M_PI * cnt / N_FRAMES;
-    for (int i = 0; i <= N; i++) {
-        for (int j = 0; j <= N; j++) {
-            double x = (i - N / 2.0) * 2 / N;
-            double y = (j - N / 2.0) * 2 / N;
-            double d = sqrt(x * x + y * y);
-            double z = (sqrt(2) - d) * sin(phi - d * 5) * ZOOM;
-            double rotation = phi / 4;
-            int xp = X_SIZE * (1 + (x * sin(rotation) + y * cos(rotation)) * ZOOM) / 2;
-            int yp = Y_SIZE * (1 + (z + (x * cos(rotation) - y * sin(rotation)) / 2) * ZOOM) / 2;
-            plot(frame, xp, yp);
-        }
-    }
+    double x = (i - N / 2.0) * 2 / N;
+    double y = (j - N / 2.0) * 2 / N;
+    double d = sqrt(x * x + y * y);
+    double z = (sqrt(2) - d) * sin(phi - d * 5) * ZOOM;
+    double rotation = phi / 4;
+    int xp = X_SIZE * (1 + (x * sin(rotation) + y * cos(rotation)) * ZOOM) / 2;
+    int yp = Y_SIZE * (1 + (z + (x * cos(rotation) - y * sin(rotation)) / 2) * ZOOM) / 2;
+    plot(frame, xp, yp);
 }
 
 double f(double x, double y) {
@@ -198,37 +197,44 @@ double g(double x, double y, double p) {
     return f(x, y + p * 2.0) + f(x, y + p * 2.0 - 2.0);
 }
 
-void render_frame2(char frame[FRAME_SIZE], int cnt) {
+void render_frame2(char frame[FRAME_SIZE], int cnt, int i, int j) {
     double phi = 1.0 - 1.0 * cnt / N_FRAMES;
-    for (int i = 0; i <= N; i++) {
-        for (int j = 0; j <= N; j++) {
-            double x = (i - N / 2.0) * 2 / N;
-            double y = (j - N / 2.0) * 2 / N;
-            double z = (
-                g(x, y, phi) * 1.2
-                + g(x + 0.8, y, phi * 2) * 0.4
-                + g(x - 0.8, y, phi + 0.4) * 0.3
-            ) * ZOOM;
-            double rotation = 0.5;
-            int xp = X_SIZE * (1 + (x * sin(rotation) + y * cos(rotation)) * ZOOM) / 2;
-            int yp = Y_SIZE * (1 + (z + (x * cos(rotation) - y * sin(rotation)) / 2) * ZOOM) / 2;
-            plot(frame, xp, yp);
-        }
-    }
+    double x = (i - N / 2.0) * 2 / N;
+    double y = (j - N / 2.0) * 2 / N;
+    double z = (
+        g(x, y, phi) * 1.2
+        + g(x + 0.8, y, phi * 2) * 0.4
+        + g(x - 0.8, y, phi + 0.4) * 0.3
+    ) * ZOOM;
+    double rotation = 0.5;
+    int xp = X_SIZE * (1 + (x * sin(rotation) + y * cos(rotation)) * ZOOM) / 2;
+    int yp = Y_SIZE * (1 + (z + (x * cos(rotation) - y * sin(rotation)) / 2) * ZOOM) / 2;
+    plot(frame, xp, yp);
 }
 
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    for (int i=0; i < N_FRAMES; i++) {
-        render_frame1(frames[0][i], i);
-    }
-    for (int i=0; i < N_FRAMES; i++) {
-        render_frame2(frames[1][i], i);
-    }
     anim_timer = timer_read();
     return rotation;
 }
 
+void do_render(int selected_anim, int cnt) {
+    if (!done[selected_anim]) {
+        for (int j = 0; j <= N; j++) {
+            if (selected_anim == 0) {
+                render_frame1(frames[selected_anim][cnt], cnt, i[selected_anim], j);
+            } else {
+                render_frame2(frames[selected_anim][cnt], cnt, i[selected_anim], j);
+            }
+        }
+        if (cnt == N_FRAMES - 1) {
+            i[selected_anim]++;
+            if (i[selected_anim] > N) {
+                done[selected_anim] = true;
+            }
+        }
+    }
+}
 
 static void render_anim(void) {
     if (timer_elapsed(anim_timer) > FRAME_TIMEOUT) {
@@ -243,6 +249,7 @@ static void render_anim(void) {
         }
 
         if (oled_was_on) {
+            do_render(selected_anim, frame_cnt);
             oled_write_raw(frames[selected_anim][frame_cnt], FRAME_SIZE);
             if (++frame_cnt == N_FRAMES) {
                 frame_cnt = 0;
